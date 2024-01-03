@@ -62,11 +62,6 @@ then
         make no-gpu
 fi
 
-#make no-lib
-
-#echo "#define strcmp __builtin_strcmp" >> dump.h
-#sed -i "s@thr->timer@//@g" pair_adp_omp.cpp
-
 #cp /opt/intel/impi/$MPI_VERSION/include64/mpi.h ./
 #cd ../lib/gpu
 #cd ../lib/meam/ && cp Makefile.lammps.ifort Makefile.lammps && make -f Makefile.ifort \
@@ -81,9 +76,7 @@ fi
 
 cd ../lib/atc/ && cp /opt/intel/oneapi/mpi/latest/include/*.h ./  \
         && sed -i "s@icc@icc -diag-disable=10441 -diag-disable=2196@g" Makefile.icc \
-        && make -j $JN -f Makefile.icc \
-        && sed -i "s@-lblas@ @g" Makefile.lammps \
-        && sed -i "s@-llapack@ @g" Makefile.lammps
+        && make -j $JN -f Makefile.icc
 
 #cd ../awpmd/ && sed -i "s/mpic++/mpiicc/g" Makefile.mpicc && make -f Makefile.mpicc
 #cd ../colvars/ && cp Makefile.g++ Makefile.icc && sed -i 's/g++/icc/g' Makefile.icc && make -f Makefile.icc
