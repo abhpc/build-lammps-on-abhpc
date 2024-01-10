@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# Applied for Jun 23, 2022
+# Applied for May 14, 2016
 
 module load icc/2023.1.0 mkl/2023.1.0 mpi/2021.9.0 gcc/7.5.0
 
@@ -17,7 +17,7 @@ EIGEN_PATH="/opt/devt/eigen-3.4.0"
 
 set -e
 INSTALL_DIR=$HOME
-tar -vxf lammps-stable.tar.gz
+tar -xzf lammps-stable.tar.gz
 cd lammps-$LMP_VERSION/src
 CUDIR=`pwd`
 M_TAR_FILE="$CUDIR/MAKE/OPTIONS/Makefile.intel_cpu_intelmpi"
@@ -49,22 +49,14 @@ sed -i "s@mpiicpc@mpiicc@g" $M_TAR_FILE
 
 cp $M_TAR_FILE $CUDIR/MAKE/OPTIONS/Makefile.intel_cpu
 
+# include
+YES_INC="ASPHERE MANYBODY ATC BOCS BODY BPM BROWNIAN MOLECULE CG-DNA CG-SDK CLASS2 COLLOID CORESHELL EXTRA-PAIR KSPACE DIELECTRIC DIFFRACTION DIPOLE DPD-BASIC DPD-MESO DPD-REACT DPD-SMOOTH DRUDE EFF EXTRA-COMPUTE EXTRA-DUMP EXTRA-FIX EXTRA-MOLECULE FEP GPU GRANULAR INTERLAYER KOKKOS LATBOLTZ MACHDYN MANIFOLD MC MEAM MGPT MISC ML-SNAP ML-IAP ML-RANN MOFFF MPIIO OPENMP OPT ORIENT PERI PHONON PLUGIN PTM QEQ QTB REACTION REAXFF REPLICA RIGID SHOCK SMTBQ SPH SPIN SRD TALLY UEF VORONOI YAFF"
+#ALL="ADIOS ASPHERE ATC AWPMD BOCS BODY BPM BROWNIAN CG-DNA CG-SDK CLASS2 COLLOID COLVARS COMPRESS CORESHELL DIELECTRIC DIFFRACTION DIPOLE DPD-BASIC DPD-MESO DPD-REACT DPD-SMOOTH DRUDE EFF ELECTRODE EXTRA-COMPUTE EXTRA-DUMP EXTRA-FIX EXTRA-MOLECULE EXTRA-PAIR FEP GPU GRANULAR H5MD INTEL INTERLAYER KIM KOKKOS KSPACE LATBOLTZ LATTE MACHDYN MANIFOLD MANYBODY MC MDI MEAM MESONT MGPT MISC ML-HDNNP ML-IAP ML-PACE ML-QUIP ML-RANN ML-SNAP MOFFF MOLECULE MOLFILE MPIIO MSCG NETCDF OPENMP OPT ORIENT PERI PHONON PLUGIN PLUMED POEMS PTM PYTHON QEQ QMMM QTB REACTION REAXFF REPLICA RIGID SCAFACOS SHOCK SMTBQ SPH SPIN SRD TALLY UEF VORONOI VTK YAFF"
 
-# include compile
-YES_INC="ASPHERE MANYBODY ATC BOCS BODY BPM BROWNIAN MOLECULE CG-DNA CG-SDK CLASS2 COLLOID CORESHELL KSPACE DIELECTRIC DIFFRACTION DIPOLE DPD-BASIC DPD-MESO DPD-REACT DPD-SMOOTH DRUDE EFF EXTRA-COMPUTE EXTRA-DUMP EXTRA-FIX EXTRA-MOLECULE EXTRA-PAIR FEP GPU GRANULAR INTERLAYER KOKKOS LATBOLTZ MACHDYN MANIFOLD MC MEAM MGPT MISC ML-SNAP ML-IAP ML-RANN MOFFF MPIIO OPENMP OPT ORIENT PERI PHONON PLUGIN PTM QEQ QTB REACTION REAXFF REPLICA RIGID SHOCK SMTBQ SPH SPIN SRD TALLY UEF VORONOI YAFF"
-# ALL="ADIOS ASPHERE ATC AWPMD BOCS BODY BPM BROWNIAN CG-DNA CG-SDK CLASS2 COLLOID COLVARS COMPRESS CORESHELL DIELECTRIC DIFFRACTION DIPOLE DPD-BASIC DPD-MESO DPD-REACT DPD-SMOOTH DRUDE EFF ELECTRODE EXTRA-COMPUTE EXTRA-DUMP EXTRA-FIX EXTRA-MOLECULE EXTRA-PAIR FEP GPU GRANULAR H5MD INTEL INTERLAYER KIM KOKKOS KSPACE LATBOLTZ LATTE MACHDYN MANIFOLD MANYBODY MC MDI MEAM MESONT MGPT MISC ML-HDNNP ML-IAP ML-PACE ML-QUIP ML-RANN ML-SNAP MOFFF MOLECULE MOLFILE MPIIO MSCG NETCDF OPENMP OPT ORIENT PERI PHONON PLUGIN PLUMED POEMS PTM PYTHON QEQ QMMM QTB REACTION REAXFF REPLICA RIGID SCAFACOS SHOCK SMTBQ SPH SPIN SRD TALLY UEF VORONOI VTK YAFF"
 for i in $YES_INC
 do
         make yes-$i
 done
-
-# exclude compile:
-# make yes-all
-# NOT_INC="electrode ML-PACE mesont mdi ML-HDNNP qmmm python kim mscg intel h5md molfile NETCDF vtk latte SCAFACOS plumed poems COMPRESS colvars awpmd ADIOS ML-QUIP"
-# for i in $NOT_INC
-# do
-#        make no-$i
-# done
 
 
 if [ "$ACC_TYPE" != "gpu" ]
@@ -72,21 +64,13 @@ then
         make no-gpu
 fi
 
-#cp /opt/intel/impi/$MPI_VERSION/include64/mpi.h ./
-#cd ../lib/gpu
-#cd ../lib/meam/ && cp Makefile.lammps.ifort Makefile.lammps && make -f Makefile.ifort \
-#                                                               && sed -i 's/ompstub/iomp5/g' Makefile.lammps && sed -i "s@fce/10.0.023/lib@composerxe/lib/intel64@g" Makefile.lammps
-
 #cd ../poems/ && make -j $JN -f Makefile.icc
-
-#cd ../reax/ && cp Makefile.lammps.ifort Makefile.lammps && sed -i "s@f7.5@f8.5@g" reax_inout.F \
-#                                               && sed -i "s@f8.6@f9.6@g" reax_inout.F && sed -i "s@f10.8@f11.8@g" reax_inout.F \
-#                                               && sed -i "s@f6.4@f7.4@g" reax_inout.F && make -j $JN -f Makefile.ifort \
-#                                               && sed -i 's/ompstub/iomp5/g' Makefile.lammps
 
 cd ../lib/atc/ && cp /opt/intel/oneapi/mpi/latest/include/*.h ./  \
         && sed -i "s@icc@icc -diag-disable=10441 -diag-disable=2196@g" Makefile.icc \
-        && make -j $JN -f Makefile.icc
+        && make -j $JN -f Makefile.icc \
+        && sed -i "s@-lblas@ @g" Makefile.lammps \
+        && sed -i "s@-llapack@ @g" Makefile.lammps
 
 #cd ../awpmd/ && sed -i "s/mpic++/mpiicc/g" Makefile.mpicc && make -f Makefile.mpicc
 #cd ../colvars/ && cp Makefile.g++ Makefile.icc && sed -i 's/g++/icc/g' Makefile.icc && make -f Makefile.icc
