@@ -1,29 +1,49 @@
-#! /bin/sh
+#! /bin/bash
+set -e
 
-# Applied for May 14, 2016
-
-module load icc/2023.1.0 mkl/2023.1.0 mpi/2021.9.0 gcc/7.5.0
-
+SOFT_SERV="http://mxgraph"
 LMP_VERSION="23Jun2022"
-# sm_86
-SM_ARCH="sm_86"
-ACC_TYPE="cpu"  # cpu, avx2 or gpu
-CUDA_ROOT="/opt/cuda-12.1"
-JN="20"
+
+module purge
+module load compiler/2023.1.0 mkl/2023.1.0 mpi/2021.9.0 gcc/7.5.0
+
+# Install blas and lapack
+yum install -y blas-devel lapack-devel
 
 # Ext packages path
-VORONOI_PATH="/opt/mechanics/voro++-0.4.6icc"
-EIGEN_PATH="/opt/devt/eigen-3.4.0"
+VORONOI_PATH="/opt/apps/mechanics/voro++-0.4.6"
+EIGEN_PATH="/opt/apps/devt/eigen-3.4.0"
+INSTALL_DIR="/opt/apps/mechanics/lammps/2022.6.23"
 
-set -e
-INSTALL_DIR=$HOME
-tar -xzf lammps-stable.tar.gz
+# Install Voro++
+wget $SOFT_SERV/voro++-0.4.6.tar.gz --no-check-certificate
+rm -rf $VORONOI_PATH
+tar -xzf voro++-0.4.6.tar.gz
+cd voro++-0.4.6/
+sed -i "s@PREFIX=/usr/local@PREFIX=$VORONOI_PATH@g" config.mk
+sed -i "s@CXX=g++@CXX=icc@g" config.mk
+sed -i "s@O3@O2 -diag-disable=10441 -diag-disable=2196 -xCORE-AVX2@g" config.mk
+make && make install
+cd .. && rm -rf voro++-0.4.6/
+
+# Install eigen
+wget $SOFT_SERV/eigen-3.4.0.tar.bz2 --no-check-certificate
+tar -xf eigen-3.4.0.tar.bz2
+rm -rf $EIGEN_PATH
+mv eigen-3.4.0 $EIGEN_PATH
+
+# Build LAMMPS 23Jun2022
+wget $SOFT_SERV/lammps-${LMP_VERSION}.tar.gz --no-check-certificate
+SM_ARCH="sm_86"
+ACC_TYPE="cpu"  # cpu, avx2 or gpu
+CUDA_ROOT="/opt/cuda-12.0"
+JN="20"
+
+mkdir -p $INSTALL_DIR/bin
+tar -xzf lammps-${LMP_VERSION}.tar.gz
 cd lammps-$LMP_VERSION/src
 CUDIR=`pwd`
 M_TAR_FILE="$CUDIR/MAKE/OPTIONS/Makefile.intel_cpu_intelmpi"
-
-#------------ Set kokkos device=OpenMP---------------
-sed -i '/SHLIBFLAGS =/ a\KOKKOS_DEVICES = OpenMP' $M_TAR_FILE
 
 #------------ Compiler Options ----------------------
 sed -i "s@-xHost@-xCORE-AVX2@g" $M_TAR_FILE
@@ -50,7 +70,7 @@ sed -i "s@mpiicpc@mpiicc@g" $M_TAR_FILE
 cp $M_TAR_FILE $CUDIR/MAKE/OPTIONS/Makefile.intel_cpu
 
 # include
-YES_INC="ASPHERE MANYBODY ATC BOCS BODY BPM BROWNIAN MOLECULE CG-DNA CG-SDK CLASS2 COLLOID CORESHELL EXTRA-PAIR KSPACE DIELECTRIC DIFFRACTION DIPOLE DPD-BASIC DPD-MESO DPD-REACT DPD-SMOOTH DRUDE EFF EXTRA-COMPUTE EXTRA-DUMP EXTRA-FIX EXTRA-MOLECULE FEP GPU GRANULAR INTERLAYER KOKKOS LATBOLTZ MACHDYN MANIFOLD MC MEAM MGPT MISC ML-SNAP ML-IAP ML-RANN MOFFF MPIIO OPENMP OPT ORIENT PERI PHONON PLUGIN PTM QEQ QTB REACTION REAXFF REPLICA RIGID SHOCK SMTBQ SPH SPIN SRD TALLY UEF VORONOI YAFF"
+YES_INC="ASPHERE MANYBODY ATC BOCS BODY BPM BROWNIAN MOLECULE CG-DNA CG-SDK CLASS2 COLLOID CORESHELL EXTRA-PAIR KSPACE DIELECTRIC DIFFRACTION DIPOLE DPD-BASIC DPD-MESO DPD-REACT DPD-SMOOTH DRUDE EFF EXTRA-COMPUTE EXTRA-DUMP EXTRA-FIX EXTRA-MOLECULE FEP GPU GRANULAR INTERLAYER LATBOLTZ MACHDYN MANIFOLD MC MEAM MGPT MISC ML-SNAP ML-IAP ML-RANN MOFFF MPIIO OPENMP OPT ORIENT PERI PHONON PLUGIN PTM QEQ QTB REACTION REAXFF REPLICA RIGID SHOCK SMTBQ SPH SPIN SRD TALLY UEF VORONOI YAFF ML-PACE"
 #ALL="ADIOS ASPHERE ATC AWPMD BOCS BODY BPM BROWNIAN CG-DNA CG-SDK CLASS2 COLLOID COLVARS COMPRESS CORESHELL DIELECTRIC DIFFRACTION DIPOLE DPD-BASIC DPD-MESO DPD-REACT DPD-SMOOTH DRUDE EFF ELECTRODE EXTRA-COMPUTE EXTRA-DUMP EXTRA-FIX EXTRA-MOLECULE EXTRA-PAIR FEP GPU GRANULAR H5MD INTEL INTERLAYER KIM KOKKOS KSPACE LATBOLTZ LATTE MACHDYN MANIFOLD MANYBODY MC MDI MEAM MESONT MGPT MISC ML-HDNNP ML-IAP ML-PACE ML-QUIP ML-RANN ML-SNAP MOFFF MOLECULE MOLFILE MPIIO MSCG NETCDF OPENMP OPT ORIENT PERI PHONON PLUGIN PLUMED POEMS PTM PYTHON QEQ QMMM QTB REACTION REAXFF REPLICA RIGID SCAFACOS SHOCK SMTBQ SPH SPIN SRD TALLY UEF VORONOI VTK YAFF"
 
 for i in $YES_INC
@@ -64,17 +84,16 @@ then
         make no-gpu
 fi
 
-#cd ../poems/ && make -j $JN -f Makefile.icc
+#------------ Set kokkos device=OpenMP---------------
+sed -i '/SHLIBFLAGS =/ a\KOKKOS_DEVICES = OpenMP' $M_TAR_FILE
 
-cd ../lib/atc/ && cp /opt/intel/oneapi/mpi/latest/include/*.h ./  \
+
+# Install ATC package
+cd ../lib/atc/ && cp $I_MPI_ROOT/include/*.h ./  \
         && sed -i "s@icc@icc -diag-disable=10441 -diag-disable=2196@g" Makefile.icc \
-        && make -j $JN -f Makefile.icc \
-        && sed -i "s@-lblas@ @g" Makefile.lammps \
-        && sed -i "s@-llapack@ @g" Makefile.lammps
+        && make -j $JN -f Makefile.icc
 
-#cd ../awpmd/ && sed -i "s/mpic++/mpiicc/g" Makefile.mpicc && make -f Makefile.mpicc
-#cd ../colvars/ && cp Makefile.g++ Makefile.icc && sed -i 's/g++/icc/g' Makefile.icc && make -f Makefile.icc
-
+# GPU package
 if [ "$ACC_TYPE" = "gpu" ]
 then
         cd ../gpu && sed -i "s@/usr/local/cuda@$CUDA_ROOT@g" Makefile.linux \
@@ -86,22 +105,30 @@ then
                                         && sed -i "s@/usr/local/cuda@$CUDA_ROOT@g" Makefile.lammps
 fi
 
+# VORONOI package
 cd ../voronoi && ln -s $VORONOI_PATH/include/voro++ ./includelink && ln -s $VORONOI_PATH/lib liblink
+
+# machdyn package
 cd ../machdyn && ln -s $EIGEN_PATH ./includelink
 
 
 cd ../../src
 
+# ML-PACE package
+make lib-pace args="-b"
+
 make -j $JN intel_cpu
 
 if [ "$ACC_TYPE" = "gpu" ]
 then
-        mv lmp_intel_cpu $INSTALL_DIR/lammps-gpu-$LMP_VERSION-$SM_ARCH
+        mv lmp_intel_cpu $INSTALL_DIR/bin/lammps-gpu
 else
-        mv lmp_intel_cpu $INSTALL_DIR/lammps-$ACC_TYPE-$LMP_VERSION
+        mv lmp_intel_cpu $INSTALL_DIR/bin/lammps-cpu
 fi
-
-cd ../..
+cd ..
+mv examples $INSTALL_DIR
+mv potentials $INSTALL_DIR
+cd ..
 rm -rf lammps-$LMP_VERSION
 
 echo "#########################################"
@@ -109,3 +136,13 @@ echo " "
 echo "The LAMMPS has been compiled successfully!"
 echo " "
 echo "#########################################"
+
+# Generate modulefile
+cat << EOF > $INSTALL_DIR/modulefile
+#%Module 1.0
+conflict lammps
+prereq  mkl/2023.1.0
+prereq  mpi/2021.9.0
+prereq  gcc/7.5.0
+prepend-path    PATH                    $INSTALL_DIR/bin
+EOF
