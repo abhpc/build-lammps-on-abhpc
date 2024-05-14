@@ -21,8 +21,6 @@ LMP_VERSION="23Jun2022"
 module purge
 module load compiler/2023.1.0 mkl/2023.1.0 mpi/2021.9.0 gcc/7.5.0
 
-# Install blas and lapack
-yum install -y blas-devel lapack-devel
 
 # Ext packages path
 VORONOI_PATH="/opt/apps/mechanics/voro++-0.4.6"
