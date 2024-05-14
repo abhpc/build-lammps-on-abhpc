@@ -1,16 +1,16 @@
 #! /bin/bash
-set -e
 
+# Choose LAMMPS version
 echo "Choose LAMMPS version to compile ():"
 echo "  1) 23Jun2022"
 echo "  2) 8Aug2023"
 read -t 15 -p "You have 15 seconds to decide: " choice
     case $choice in
         1)
-            LMP_VERS="23Jun2022"
+            LMP_VERSION="23Jun2022"
             ;;
         2)
-            LMP_VERS="8Aug2023"
+            LMP_VERSION="8Aug2023"
             ;;
         *)
             echo "Error: invalid Exiting..."
@@ -18,20 +18,24 @@ read -t 15 -p "You have 15 seconds to decide: " choice
             ;;
     esac
 
-echo "The LAMMPS VERSION is: $LMP_VERS"
-exit 0
-
-SOFT_SERV="http://mxgraph"
-LMP_VERSION="23Jun2022"
-
-module purge
-module load compiler/2023.1.0 mkl/2023.1.0 mpi/2021.9.0 gcc/7.5.0
-
+# debug 1: check the lammps version
+#echo "The LAMMPS version is: $LMP_VERSION"
+#exit 0
 
 # Ext packages path
-VORONOI_PATH="/opt/apps/mechanics/voro++-0.4.6"
-EIGEN_PATH="/opt/apps/devt/eigen-3.4.0"
-INSTALL_DIR="/opt/apps/mechanics/lammps/2022.6.23"
+VORONOI_PATH=$(cat path.conf|grep VORONOI_PATH|awk '{print $2}')
+EIGEN_PATH=$(cat path.conf|grep EIGEN_PATH|awk '{print $2}')
+LMP_PATH=$(cat path.conf|grep LMP_PATH|awk '{print $2}')
+
+# debug 2: check install directories
+echo "VORONOI_PATH=$VORONOI_PATH"
+echo "EIGEN_PATH=$EIGEN_PATH"
+echo "LMP_PATH=$LMP_PATH"
+exit 0
+
+# Load environment modules
+module purge
+module load compiler/2023.1.0 mkl/2023.1.0 mpi/2021.9.0 gcc/7.5.0
 
 # Install Voro++
 wget $SOFT_SERV/voro++-0.4.6.tar.gz --no-check-certificate
