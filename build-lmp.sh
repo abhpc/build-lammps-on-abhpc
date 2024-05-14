@@ -1,6 +1,20 @@
 #! /bin/bash
 set -e
 
+echo "Choose LAMMPS version to compile ():"
+echo "  1) 23Jun2022"
+echo "  2)  8Aug2023"
+read -t 15 -p "You have 15 seconds to decide: " choice
+    case $choice in
+        y|Y)
+            ;;
+        *)
+            echo "Error: invalid Exiting..."
+            exit 0
+            ;;
+    esac
+
+
 SOFT_SERV="http://mxgraph"
 LMP_VERSION="23Jun2022"
 

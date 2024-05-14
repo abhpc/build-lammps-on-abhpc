@@ -6,5 +6,8 @@ Shell scripts to compile open source molecualr dynamics software [LAMMPS](https:
 - [Extra libraries](#extra-libraries)
 
 ## System requirements
-
+The blas and lapack libraries should be installed before running this script:
+```bash
+yum install -y blas-devel lapack-devel
+```
 ## Extra libraries
