@@ -61,7 +61,7 @@ ACC_TYPE="cpu"  # cpu, avx2 or gpu
 CUDA_ROOT="/opt/cuda-12.0"
 JN="20"
 
-mkdir -p $INSTALL_DIR/bin
+mkdir -p $LMP_PATH/bin
 tar -xzf lammps-${LMP_VERSION}.tar.gz
 cd lammps-$LMP_VERSION/src
 CUDIR=`pwd`
@@ -145,13 +145,13 @@ make -j $JN intel_cpu
 
 if [ "$ACC_TYPE" = "gpu" ]
 then
-        mv lmp_intel_cpu $INSTALL_DIR/bin/lammps-gpu
+        mv lmp_intel_cpu $LMP_PATH/bin/lammps-gpu
 else
-        mv lmp_intel_cpu $INSTALL_DIR/bin/lammps-cpu
+        mv lmp_intel_cpu $LMP_PATH/bin/lammps-cpu
 fi
 cd ..
-mv examples $INSTALL_DIR
-mv potentials $INSTALL_DIR
+mv examples $LMP_PATH
+mv potentials $LMP_PATH
 cd ..
 rm -rf lammps-$LMP_VERSION
 
@@ -162,11 +162,11 @@ echo " "
 echo "#########################################"
 
 # Generate modulefile
-cat << EOF > $INSTALL_DIR/modulefile
+cat << EOF > $LMP_PATH/modulefile
 #%Module 1.0
 conflict lammps
 prereq  mkl/2023.1.0
 prereq  mpi/2021.9.0
 prereq  gcc/7.5.0
-prepend-path    PATH                    $INSTALL_DIR/bin
+prepend-path    PATH                    $LMP_PATH/bin
 EOF
