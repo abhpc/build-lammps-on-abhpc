@@ -24,6 +24,7 @@ read -t 15 -p "You have 15 seconds to decide: " choice
 
 # Ext packages path
 VORONOI_PATH=$(cat path.conf|grep VORONOI_PATH|awk '{print $2}')
+VORONOI_CFLAG=$(cat path.conf|grep VORONOI_CFLAG|awk -F '"' '{print $2}')
 EIGEN_PATH=$(cat path.conf|grep EIGEN_PATH|awk '{print $2}')
 LMP_PATH=$(cat path.conf|grep LMP_PATH|awk '{print $2}')
 
@@ -31,6 +32,7 @@ LMP_PATH=$(cat path.conf|grep LMP_PATH|awk '{print $2}')
 echo "VORONOI_PATH=$VORONOI_PATH"
 echo "EIGEN_PATH=$EIGEN_PATH"
 echo "LMP_PATH=$LMP_PATH/$LMP_VERSION"
+echo "VORONOI_CFLAG=$VORONOI_CFLAG"
 exit 0
 
 # Load environment modules
@@ -39,20 +41,27 @@ module load compiler/2023.1.0 mkl/2023.1.0 mpi/2021.9.0 gcc/7.5.0
 
 # Check if voro++-0.4.6 is already installed
 if [ -d "$VORONOI_PATH" ]; then
-    echo "voro++-0.4.6 is already installed in $VORONOI_PATH. Skipping installation."
-    echo -e "----------------------------------------------------------------------------------------------------------\n"
+        echo "voro++-0.4.6 is already installed in $VORONOI_PATH. Skipping installation."
+        echo -e "----------------------------------------------------------------------------------------------------------\n"
 else
-        wget $SOFT_SERV/voro++-0.4.6.tar.gz --no-check-certificate
-        tar -xzf voro++-0.4.6.tar.gz
+        echo -e "------------------------------- Install VORONOI Package voro++-0.4.6 -------------------------------------"
+        wget --no-check-certificate https://math.lbl.gov/voro++/download/dir/voro++-0.4.6.tar.gz
+        
+        echo "Uncompress voro++-0.4.6.tar.gz ..."
+        tar -xzf voro++-0.4.6.tar.gz 1>/dev/null
         cd voro++-0.4.6/
         sed -i "s@PREFIX=/usr/local@PREFIX=$VORONOI_PATH@g" config.mk
         sed -i "s@CXX=g++@CXX=icc@g" config.mk
-        sed -i "s@O3@O2 -diag-disable=10441 -diag-disable=2196 -xCORE-AVX2@g" config.mk
-        make && make install
-        cd .. && rm -rf voro++-0.4.6/
+        sed -i "s@O3@$VORONOI_CFLAG@g" config.mk
+
+        echo "Make and make install ..."
+        make 1>/dev/null && make install 1>/dev/null
+        cd .. && rm -rf voro++-0.4.6/ voro++-0.4.6.tar.gz
+        echo -e "------------------------- VORONOI Package voro++-0.4.6 installation done! --------------------------------\n"
 fi
 
-# Install eigen
+# Check if eigen-3.4.0 is already installed
+
 wget $SOFT_SERV/eigen-3.4.0.tar.bz2 --no-check-certificate
 tar -xf eigen-3.4.0.tar.bz2
 rm -rf $EIGEN_PATH
