@@ -37,16 +37,20 @@ exit 0
 module purge
 module load compiler/2023.1.0 mkl/2023.1.0 mpi/2021.9.0 gcc/7.5.0
 
-# Install Voro++
-wget $SOFT_SERV/voro++-0.4.6.tar.gz --no-check-certificate
-rm -rf $VORONOI_PATH
-tar -xzf voro++-0.4.6.tar.gz
-cd voro++-0.4.6/
-sed -i "s@PREFIX=/usr/local@PREFIX=$VORONOI_PATH@g" config.mk
-sed -i "s@CXX=g++@CXX=icc@g" config.mk
-sed -i "s@O3@O2 -diag-disable=10441 -diag-disable=2196 -xCORE-AVX2@g" config.mk
-make && make install
-cd .. && rm -rf voro++-0.4.6/
+# Check if voro++-0.4.6 is already installed
+if [ -d "$VORONOI_PATH" ]; then
+    echo "voro++-0.4.6 is already installed in $VORONOI_PATH. Skipping installation."
+    echo -e "----------------------------------------------------------------------------------------------------------\n"
+else
+        wget $SOFT_SERV/voro++-0.4.6.tar.gz --no-check-certificate
+        tar -xzf voro++-0.4.6.tar.gz
+        cd voro++-0.4.6/
+        sed -i "s@PREFIX=/usr/local@PREFIX=$VORONOI_PATH@g" config.mk
+        sed -i "s@CXX=g++@CXX=icc@g" config.mk
+        sed -i "s@O3@O2 -diag-disable=10441 -diag-disable=2196 -xCORE-AVX2@g" config.mk
+        make && make install
+        cd .. && rm -rf voro++-0.4.6/
+fi
 
 # Install eigen
 wget $SOFT_SERV/eigen-3.4.0.tar.bz2 --no-check-certificate
