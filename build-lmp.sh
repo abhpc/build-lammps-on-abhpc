@@ -45,7 +45,9 @@ if [ -d "$VORONOI_PATH" ]; then
         echo -e "----------------------------------------------------------------------------------------------------------\n"
 else
         echo -e "------------------------------- Install VORONOI Package voro++-0.4.6 -------------------------------------"
-        wget --no-check-certificate https://math.lbl.gov/voro++/download/dir/voro++-0.4.6.tar.gz
+        echo "Downloading voro++-0.4.6.tar.gz ..."
+        wget --no-check-certificate https://math.lbl.gov/voro++/download/dir/voro++-0.4.6.tar.gz 1>/dev/null
+        echo -e "Done!\n"
         
         echo "Uncompress voro++-0.4.6.tar.gz ..."
         tar -xzf voro++-0.4.6.tar.gz 1>/dev/null
@@ -61,11 +63,21 @@ else
 fi
 
 # Check if eigen-3.4.0 is already installed
+if [ -d "$EIGEN_PATH" ]; then
+        echo "eigen 3.4.0 is already installed in $EIGEN_PATH. Skipping installation."
+        echo -e "----------------------------------------------------------------------------------------------------------\n"
+else
+        echo -e "--------------------------------- Install EIGEN Package eigen-3.4.0 --------------------------------------"
+        echo "Download eigen-3.4.0.tar.bz2 ..."
+        wget --no-check-certificate https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.bz2 1>/dev/null
+        echo -e "Done!\n"
 
-wget $SOFT_SERV/eigen-3.4.0.tar.bz2 --no-check-certificate
-tar -xf eigen-3.4.0.tar.bz2
-rm -rf $EIGEN_PATH
-mv eigen-3.4.0 $EIGEN_PATH
+        tar -xf eigen-3.4.0.tar.bz2 1>/dev/null
+        rm -rf $EIGEN_PATH
+        mv eigen-3.4.0 $EIGEN_PATH
+        rm -rf eigen-3.4.0.tar.bz2
+        echo -e "--------------------------- EIGEN Package eigen-3.4.0 installation done! ---------------------------------\n"
+fi
 
 # Build LAMMPS 23Jun2022
 wget $SOFT_SERV/lammps-${LMP_VERSION}.tar.gz --no-check-certificate
