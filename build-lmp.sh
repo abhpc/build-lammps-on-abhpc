@@ -30,7 +30,7 @@ LMP_PATH=$(cat path.conf|grep LMP_PATH|awk '{print $2}')
 # debug 2: check install directories
 echo "VORONOI_PATH=$VORONOI_PATH"
 echo "EIGEN_PATH=$EIGEN_PATH"
-echo "LMP_PATH=$LMP_PATH"
+echo "LMP_PATH=$LMP_PATH/$LMP_VERSION"
 exit 0
 
 # Load environment modules
