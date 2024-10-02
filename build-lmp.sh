@@ -80,6 +80,7 @@ else
 fi
 
 # Build LAMMPS 23Jun2022
+YES_INC=$(cat $LMP_VERSION/package.sta|grep -i yes|awk '{print $2}')
 wget $SOFT_SERV/lammps-${LMP_VERSION}.tar.gz --no-check-certificate
 SM_ARCH="sm_86"
 ACC_TYPE="cpu"  # cpu, avx2 or gpu
@@ -117,9 +118,6 @@ sed -i "s@mpiicpc@mpiicc@g" $M_TAR_FILE
 cp $M_TAR_FILE $CUDIR/MAKE/OPTIONS/Makefile.intel_cpu
 
 # include
-
-YES_INC=$(cat $LMP_VERSION/package.sta|grep -i yes|awk '{print $2}')
-
 for i in $YES_INC
 do
         make yes-$i
