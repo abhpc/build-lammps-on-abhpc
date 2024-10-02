@@ -33,7 +33,7 @@ echo "VORONOI_PATH=$VORONOI_PATH"
 echo "EIGEN_PATH=$EIGEN_PATH"
 echo "LMP_PATH=$LMP_PATH/$LMP_VERSION"
 echo "VORONOI_CFLAG=$VORONOI_CFLAG"
-exit 0
+LMP_PATH=$LMP_PATH/$LMP_VERSION
 
 # Load environment modules
 module purge
@@ -118,7 +118,7 @@ cp $M_TAR_FILE $CUDIR/MAKE/OPTIONS/Makefile.intel_cpu
 
 # include
 
-YES_INC=$(cat package.sta|grep -i yes|awk '{print $2}')
+YES_INC=$(cat $LMP_VERSION/package.sta|grep -i yes|awk '{print $2}')
 
 for i in $YES_INC
 do
