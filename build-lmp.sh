@@ -1,5 +1,7 @@
 #! /bin/bash
 
+export SOFT_SERV="http://118.123.172.217:40899"
+
 # Choose LAMMPS version
 echo "Choose LAMMPS version to compile ():"
 echo "  1) 23Jun2022"
@@ -34,6 +36,7 @@ echo "EIGEN_PATH=$EIGEN_PATH"
 echo "LMP_PATH=$LMP_PATH/$LMP_VERSION"
 echo "VORONOI_CFLAG=$VORONOI_CFLAG"
 LMP_PATH=$LMP_PATH/$LMP_VERSION
+#exit 0
 
 # Load environment modules
 module purge
@@ -46,7 +49,7 @@ if [ -d "$VORONOI_PATH" ]; then
 else
         echo -e "------------------------------- Install VORONOI Package voro++-0.4.6 -------------------------------------"
         echo "Downloading voro++-0.4.6.tar.gz ..."
-        wget --no-check-certificate https://math.lbl.gov/voro++/download/dir/voro++-0.4.6.tar.gz 1>/dev/null
+        wget --no-check-certificate http://mx.yinhe596.cn:40899/files/voro++-0.4.6.tar.gz 1>/dev/null
         echo -e "Done!\n"
         
         echo "Uncompress voro++-0.4.6.tar.gz ..."
@@ -69,7 +72,7 @@ if [ -d "$EIGEN_PATH" ]; then
 else
         echo -e "--------------------------------- Install EIGEN Package eigen-3.4.0 --------------------------------------"
         echo "Download eigen-3.4.0.tar.bz2 ..."
-        wget --no-check-certificate https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.bz2 1>/dev/null
+        wget --no-check-certificate http://mx.yinhe596.cn:40899/files/eigen-3.4.0.tar.bz2 1>/dev/null
         echo -e "Done!\n"
 
         tar -xf eigen-3.4.0.tar.bz2 1>/dev/null
@@ -160,7 +163,7 @@ cd ../machdyn && ln -s $EIGEN_PATH ./includelink
 cd ../../src
 
 # ML-PACE package
-make lib-pace args="-b"
+#make lib-pace args="-b"
 
 make -j $JN intel_cpu
 
