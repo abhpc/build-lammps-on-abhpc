@@ -105,7 +105,7 @@ sed -i "s@mpiicpc@mpiicc@g" $M_TAR_FILE
 #------------ Presion control ---------------------
 #sed -i "s@-fp-model@-fp-model=precise@g" $M_TAR_FILE
 #sed -i "s@fast=2@fast=1@g" $M_TAR_FILE
-#sed -i "@-no-prec-div@ @g" $M_TAR_FILE
+#sed -i "s@-no-prec-div@ @g" $M_TAR_FILE
 
 #------------ MPI options  -------------------------
 #sed -i "s@-DMPICH_SKIP_MPICXX@-DMPICH_SKIP_MPICXX -I/opt/intel/oneapi/mpi/latest/include/ @g" $M_TAR_FILE
